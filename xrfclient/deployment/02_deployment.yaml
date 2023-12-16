@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: xrfcapi
+  namespace: xrf
+spec:
+  selector:
+    app: xrfcapi
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9091
+      targetPort: 9091
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xrfc20
+  namespace: xrf
+  labels:
+    app: xrfc20
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xrfc20
+  template:
+    metadata:
+      annotations:
+        k8s.v1.cni.cncf.io/networks: xrf-ext-net3
+              #config.linkerd.io/enable-debug-sidecar: "true"
+              #linkerd.io/inject: enabled
+      labels:
+        app: xrfc20
+    spec:
+      containers:
+      - name: xrfc
+        image: tolgaomeratalay/xrfclient:senderv2 #4.2
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: SERVER_XRF
+          value: "20.12.10.10"
+        - name: XRF_PORT
+          value: "9090"
+        - name: SERVER_CLIENT
+          value: "20.12.10.30"
+        - name: CLIENT_PORT
+          value: "9095"
+        - name: REG_COUNT
+          value: "1"
+        - name: CLIENT_COUNT
+          value: "5"
+        - name: METHOD
+          value: "1"
+

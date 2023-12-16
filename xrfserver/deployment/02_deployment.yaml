@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xrfs
+  labels:
+    app: xrfs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xrfs
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: xrfs
+      annotations:
+        k8s.v1.cni.cncf.io/networks: xrf-ext-net1
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+      - name: xrfs
+        image: tolgaomeratalay/xrfserver:initauth_tokreq_tokrem_v1
+        command:
+          - sleep
+          - infinity
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: THREAD_COUNT
+          value: "5"
+        - name: CLIENT_COUNT
+          value: "2"
+        - name: AUTH_EXT_IP
+          value: "20.12.10.11"
+        - name: TOKREQ_EXT_IP
+          value: "20.12.10.12"
+        - name: TOKREM_EXT_IP
+          value: "20.12.10.15"
+        - name: TOKALL_EXT_IP
+          value: "20.12.10.16"
+        securityContext:
+          privileged: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
